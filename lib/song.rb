@@ -69,13 +69,64 @@ class Songs
   end
 
   def save
-    sql = <<-SQL
-      INSERT INTO songs(name, album, length)
-      VALUES (?, ?)
-    SQL
+    if self.id
+      self.update
+    else
 
-    DB[:conn].execute(sql.name, sql.album, sql.length)
-    @id = DB[:conn].execute("SELECT last_insert_rowid() FROM songs")[0][0]
+      sql = <<-SQL
+        INSERT INTO songs(name, album, length)
+        VALUES (?, ?, ?)
+      SQL
+
+      DB[:conn].execute(sql.name, sql.album, sql.length)
+      @id = DB[:conn].execute("SELECT last_insert_rowid() FROM songs")[0][0]
+    end
   end
 
+  def update
+    sql = <<-SQL
+      UPDATE songs
+      SET name = ?, album = ?, length = ?
+      WHERE id = ?
+    SQL
+
+    DB[:conn].execute(sql, self.name, self.album, self.length, self.id)
+
+  end
+
+
 end
+
+<<-NOTES
+ninety_nine_problems = Song.create(name: "99 Problems", album: "The Blueprint")
+ 
+Song.find_by_name("99 Problems")
+# => #<Song:0x007f94f2c28ee8 @id=1, @name="99 Problems", @album="The Blueprint">
+
+ninety_nine_problems = Song.find_by_name("99 Problems")
+ 
+ninety_nine_problems.album
+# => "The Blueprint"
+
+ninety_nine_problems.album = "The Black Album"
+ 
+ninety_nine_problems.album
+# => "The Black Album"
+
+UPDATE songs
+SET album="The Black Album"
+WHERE name="99 Problems";
+
+sql = "UPDATE songs SET album = ? WHERE name = ?"
+ 
+DB[:conn].execute(sql, ninety_nine_problems.album, ninety_nine_problems.name)
+Song.create(name: "Hella", album: "25")
+
+hello = Song.find_by_name("Hella")
+ 
+sql = "UPDATE songs SET name='Hello' WHERE name = ?"
+ 
+DB[:conn].execute(sql, hello.name)
+
+
+NOTES
