@@ -12,6 +12,17 @@ class Songs
 
   end
 
+def self.find_or_create_by(name:, album:, length:)
+  query_song = DB[:conn].execute("SELECT * FROM songs WHERE name = ? and album = ?;", name, album)
+  if !song.empty?
+    song_record = query_song[0]
+    query_song = Song.new(song_record[0], song_record[1], song_record[2], song_record[3])
+  else
+    query_song = self.create(name: name, album: album, length: length)
+  end
+  query_song
+end
+
   def self.all
     sql = <<-SQL
       SELECT * FROM songs
